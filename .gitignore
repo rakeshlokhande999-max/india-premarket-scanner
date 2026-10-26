@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# App data (generated at runtime)
+data/*.db
+data/latest_scan.json
+data/latest_preopen.json
+data/latest_momentum.json
+data/price_bands.json
+logs/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store

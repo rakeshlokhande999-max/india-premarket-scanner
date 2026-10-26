@@ -1,0 +1,31 @@
+# Example crontab entries. Install with: crontab -e
+# Confirm the host's timezone first (`timedatectl` on Ubuntu); these times
+# assume the cron daemon runs in IST. If the host is UTC, either add
+# `CRON_TZ=Asia/Kolkata` above each line (supported by cronie/most modern
+# cron) or shift the times back by 5h30m yourself.
+#
+# Adjust the path below to wherever this project actually lives.
+
+PROJECT_DIR=/opt/india-premarket-scanner
+VENV_PY=$PROJECT_DIR/.venv/bin/python
+
+# 08:00 IST Mon-Fri: main scan
+0 8 * * 1-5 cd $PROJECT_DIR && $VENV_PY scanner.py scan >> logs/scan.log 2>&1
+
+# 09:05 IST Mon-Fri: pre-open validation (NSE's pre-open window is ~9:00-9:15)
+5 9 * * 1-5 cd $PROJECT_DIR && $VENV_PY scanner.py preopen >> logs/preopen.log 2>&1
+
+# 07:30 IST Mon-Fri: backfill yesterday's outcomes before today's scan runs
+30 7 * * 1-5 cd $PROJECT_DIR && $VENV_PY scanner.py backfill >> logs/backfill.log 2>&1
+
+# --- AI Momentum / Upper-Circuit Scanner ---
+# This is periodic polling, not a live/websocket monitor (deferred until a
+# broker feed is configured -- see README). Every 15 min during the
+# 09:15-15:30 IST session is a reasonable balance between freshness and
+# not hammering NSE's undocumented quote-equity endpoint.
+
+# Every 15 min, 09:15-15:30 IST Mon-Fri: momentum research snapshot
+*/15 9-15 * * 1-5 cd $PROJECT_DIR && $VENV_PY scanner.py momentum >> logs/momentum.log 2>&1
+
+# Every 15 min, 09:15-15:30 IST Mon-Fri: backfill due 15/30/60/120-min outcomes
+*/15 9-15 * * 1-5 cd $PROJECT_DIR && $VENV_PY scanner.py momentum-backfill >> logs/momentum_backfill.log 2>&1
